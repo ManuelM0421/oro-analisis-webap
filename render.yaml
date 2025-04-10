@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: oro-analisis-app
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: "python app.py"
+    envVars:
+      - key: API_KEY
+        value: LaFn0MiPufrEukxs6b054092608

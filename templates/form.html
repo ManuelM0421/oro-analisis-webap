@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reporte Semanal del Oro (XAU)</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 2rem; }
+    h1 { color: #d4af37; }
+    .container { max-width: 700px; margin: auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    label { display: block; margin-top: 1rem; }
+    input[type="date"] { padding: 0.5rem; width: 100%; }
+    button { margin-top: 1rem; padding: 0.7rem 1.5rem; border: none; border-radius: 4px; background: #d4af37; color: white; cursor: pointer; }
+    button:hover { background: #b9972c; }
+    #resultados { margin-top: 2rem; }
+    pre { background: #f0f0f0; padding: 1rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Generador de Reporte del Oro (XAU)</h1>
+    <form id="reporte-form">
+      <label for="start">Fecha de inicio:</label>
+      <input type="date" id="start" name="start" required />
+
+      <label for="end">Fecha de fin:</label>
+      <input type="date" id="end" name="end" required />
+
+      <button type="button" onclick="previsualizar()">Previsualizar eventos</button>
+      <button type="submit">Generar PDF</button>
+    </form>
+
+    <div id="resultados"></div>
+  </div>
+
+  <script>
+    function previsualizar() {
+      const start = document.getElementById('start').value;
+      const end = document.getElementById('end').value;
+
+      fetch('/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `start=${start}&end=${end}`
+      })
+      .then(res => res.json())
+      .then(data => {
+        const div = document.getElementById('resultados');
+        if (data.length === 0) {
+          div.innerHTML = "<p>No se encontraron eventos relevantes para este periodo.</p>";
+        } else {
+          let html = "<h3>Eventos Económicos Relevantes:</h3><pre>";
+          data.forEach(e => {
+            html += `${e.fecha} - ${e.evento} (${e.actual} vs ${e.forecast}) - ${e.pais}\n`;
+          });
+          html += "</pre>";
+          div.innerHTML = html;
+        }
+      });
+    }
+
+    document.getElementById('reporte-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      fetch('/generate', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Reporte_Oro.pdf';
+        a.click();
+      });
+    });
+  </script>
+</body>
+</html>
